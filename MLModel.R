@@ -1,1 +1,74 @@
-#START
+library(data.table)
+library(dplyr)
+library(DT)
+library(ggplot2)
+library(glue)
+library(kernlab)
+library(LiblineaR)
+library(randomForest)
+library(RCurl)
+library(rlang)
+library(shiny)
+library(shinythemes)
+library(caret)
+
+VGData <- read.csv('/Users/rishivora/Downloads/R-Assignments/ML-Model-in-R/ML-Model-in-R/vgsales.csv')
+View(VGData)
+
+sum(is.na(VGData))
+
+# To achieve reproducible model; set the random seed number
+set.seed(100)
+
+# Performs stratified random split of the data set  - have a dataset to use to train the model
+TrainingIndex <- caret::createDataPartition(VGData$Global_Sales, p=0.8, list = FALSE)
+TrainingSet <- VGData[TrainingIndex,] # Training Set
+TestingSet <- VGData[-TrainingIndex,] # Test Set
+
+# Compare scatter plot of the 80 and 20 data subsets
+
+
+
+
+###############################
+# SVM model (polynomial kernel) - support vector machine model
+
+# Build Training model - uses training set to build the model (80% of dataset) - this will help us predict class label of testing set
+#train (class label,...)
+Model <- train(Global_Sales ~ ., data = TrainingSet,
+               method = "svmPoly",
+               na.action = na.omit,
+               preProcess=c("scale","center"),  #scales data by computing mean value
+               trControl= trainControl(method="none"),
+               tuneGrid = data.frame(degree=1,scale=1,C=1)
+)
+
+# Build CV model - cross validation model - separates and analyzes data
+Model.cv <- train(Global_Sales ~ ., data = TrainingSet,
+                  method = "svmPoly",
+                  na.action = na.omit,
+                  preProcess=c("scale","center"),
+                  trControl= trainControl(method="cv", number=10),
+                  tuneGrid = data.frame(degree=1,scale=1,C=1)
+)
+
+
+# Apply model for prediction
+Model.training <-predict(Model, TrainingSet) # Apply model to make prediction on Training set
+Model.testing <-predict(Model, TestingSet) # Apply model to make prediction on Testing set - apply the training model to predict the class of the testing set
+Model.cv <-predict(Model.cv, TrainingSet) # Perform cross-validation
+
+# Model performance (Displays confusion matrix and statistics)
+Model.training.confusion <-confusionMatrix(Model.training, TrainingSet$Global_Sales)
+Model.testing.confusion <-confusionMatrix(Model.testing, TestingSet$Global_Sales)
+Model.cv.confusion <-confusionMatrix(Model.cv, TrainingSet$Global_Sales)
+
+print(Model.training.confusion)   #shows predictions based off of model
+print(Model.testing.confusion)
+print(Model.cv.confusion)
+
+# Feature importance
+Importance <- varImp(Model) #shows which characteristics were most important for the learning/training model
+plot(Importance)
+plot(Importance, col = "red")
+
