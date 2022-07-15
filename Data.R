@@ -1,3 +1,4 @@
+
 library(data.table)
 library(dplyr)
 library(DT)
@@ -11,7 +12,7 @@ library(rlang)
 library(shiny)
 library(shinythemes)
 
-VGData <- read.csv('/Users/rishivora/Downloads/R-Assignments/ML-Model-in-R/ML-Model-in-R/vgsales.csv')
+VGData <- read.csv('B:/Random Coding Stuff/ML-Model-in-R/vgsales.csv')
 View(VGData)
 
 PlatformSales <- do.call(rbind, Map(data.frame, Platform=VGData$Platform, Sales=VGData$Global_Sales))
@@ -30,8 +31,3 @@ sum(VGData$NA_Sales)
 sum(VGData$EU_Sales)
 sum(VGData$JP_Sales)
 sum(VGData$Other_Sales)
-
-
-
-
-
